@@ -1,0 +1,363 @@
+Linear Models in Statistics using Maple
+INTRODUCTION BY EXAMPLE:  Multiple Linear Regression 
+
+Multiple Linear Regression Model   Y = βo + β1*x1 +β2*X2+..βk*Xk  
+enter Y for data,  &  X  for the experimental matrix (Table 7.1)
+restart:interface(rtablesize = 50):with(plots):with(LinearAlgebra):with(Statistics):with(ArrayTools):
+Data with nrows and one column                                                                                                                                                        
+Y := Matrix(12, 1, [2, 3, 2, 7, 6, 8, 10, 7, 8, 12, 11, 14]);
+n := ArrayNumElems(Y);
+type(Y, Matrix);
+Ymean := Mean(Y)(1, 1);
+                                [2 ]
+                                [  ]
+                                [3 ]
+                                [  ]
+                                [2 ]
+                                [  ]
+                                [7 ]
+                                [  ]
+                                [6 ]
+                                [  ]
+                                [8 ]
+                           Y := [  ]
+                                [10]
+                                [  ]
+                                [7 ]
+                                [  ]
+                                [8 ]
+                                [  ]
+                                [12]
+                                [  ]
+                                [11]
+                                [  ]
+                                [14]
+
+                            n := 12
+
+                              true
+
+                   Ymean := 7.50000000000000
+
+X := Matrix(12, 3, [1, 0, 2, 1, 2, 6, 1, 2, 7, 1, 2, 5, 1, 4, 9, 1, 4, 8, 1, 4, 7, 1, 6, 10, 1, 6, 11, 1, 6, 9, 1, 8, 15, 1, 8, 13]);
+                             [1  0  2 ]
+                             [        ]
+                             [1  2  6 ]
+                             [        ]
+                             [1  2  7 ]
+                             [        ]
+                             [1  2  5 ]
+                             [        ]
+                             [1  4  9 ]
+                             [        ]
+                             [1  4  8 ]
+                        X := [        ]
+                             [1  4  7 ]
+                             [        ]
+                             [1  6  10]
+                             [        ]
+                             [1  6  11]
+                             [        ]
+                             [1  6  9 ]
+                             [        ]
+                             [1  8  15]
+                             [        ]
+                             [1  8  13]
+
+k := numelems(X)/n;
+type(X, Matrix);
+                             k := 3
+
+                              true
+
+Xprimed := Transpose(X);
+                 [1  1  1  1  1  1  1  1   1   1  1   1 ]
+                 [                                      ]
+      Xprimed := [0  2  2  2  4  4  4  6   6   6  8   8 ]
+                 [                                      ]
+                 [2  6  7  5  9  8  7  10  11  9  15  13]
+
+XprimedX := Xprimed . X;
+                              [12   52   102 ]
+                              [              ]
+                  XprimedX := [52   296  536 ]
+                              [              ]
+                              [102  536  1004]
+
+XprimedXinverse := MatrixInverse(XprimedX);
+                      [   309          77              145 ]
+                      [   ---          ---      uminus0--- ]
+                      [   317          317             634 ]
+                      [                                    ]
+                      [    77          411             141 ]
+   XprimedXinverse := [   ---         ----      uminus0----]
+                      [   317         2536             1268]
+                      [                                    ]
+                      [       145         141       53     ]
+                      [uminus0---  uminus0----      ---    ]
+                      [       634         1268      634    ]
+
+XprimedY := Xprimed . Y;
+                                   [90 ]
+                                   [   ]
+                       XprimedY := [482]
+                                   [   ]
+                                   [872]
+
+           `Betahat` are the least-square-error estimates of the (unknown) regression coefficients `Beta` 
+             (the hat notation follows common usage in the literature for the β regression coefficients)
+
+Betahat := XprimedXinverse . XprimedY;
+Betahat := convert(Betahat, float);
+                          [    5.375394322     ]
+                          [                    ]
+               Betahat := [    3.011829653     ]
+                          [                    ]
+                          [&uminus0;1.285488959]
+
+
+
+OPTIONAL
+  
+If you have a three dimensional model, such as this one ,  then a 3D graph may be your tool to find outliers.  Otherwise, this graphic should be ignored.
+The first two coordinates in the triplet are the 2nd and third columns of the X matrix. The third coordinate in the triplet is the Y column. In this example, an outlier is clearly visible.
+
+fit := plot3d(Betahat(1) + ((Betahat(2)) . X1) + ((Betahat(3)) . X2), X1 = 0 .. 10, X2 = 0 .. 16);
+display(fit);
+data := pointplot3d({[0, 2, 2], [2, 5, 7], [2, 6, 3], [2, 7, 2], [4, 7, 10], [4, 8, 8], [4, 9, 6], [6, 9, 12], [6, 10, 7], [6, 11, 8], [8, 13, 14], [8, 15, 1]}, axes = normal, color = red, symbol = soliddiamond, symbolsize = 30, scaling = unconstrained, title = `Data and Best Fit`);
+display({data, fit});
+
+Compute SSE, SST, SSR, Rsquared
+NULL;
+, Standard Deviation, F                                               
+Yprimed := Transpose(Y);
+      Yprimed := [2  3  2  7  6  8  10  7  8  12  11  14]
+
+YprimedY := Yprimed . Y;
+                                 YprimedY := [840]
+
+BetahatPrime := Transpose(Betahat);
+BetahatPrime := [5.375394322  3.011829653  &uminus0;1.285488959]
+
+                                                                                                                        
+                                                                                                                                                
+SSE := YprimedY - (BetahatPrime . XprimedY);
+degrees_of_freedom := n + (-k - 1);
+EstimatedVariance := SSE(1, 1)/(n + (-k - 1));
+EstimatedStandardDeviation := sqrt(%);
+                   SSE, is  the sum of squares of errors between observed and regression values,                                                                                                           
+                   SSE := [25.4589905220000]
+
+                    degrees_of_freedom := 8
+
+             EstimatedVariance := 3.18237381525000
+
+         EstimatedStandardDeviation := 1.78392091059273
+
+`cov&beta;` := SSE(1, 1)*XprimedXinverse;
+cov&beta; := [
+
+  [24.8164923384795, 6.18404501638486, &uminus0;5.82263978815458], 
+
+  [6.18404501638486, 4.12604302229574, &uminus0;2.83100762113723], 
+
+  [&uminus0;5.82263978815458, &uminus0;2.83100762113723, 
+
+  2.12827523291167]]
+
+
+                                                                                                                                                  
+Ymean := Mean(Y);
+SSR := (((Transpose(Betahat)) . (Transpose(X))) . Y) - n*Ymean(1, 1)^2;
+
+
+SSR, or the sums of squares of regression values  about the mean of the observations
+                                                                                                                                   
+
+                   Ymean:= [7.5]
+                   SSR := [139.541009478000]
+
+SST := SSE + SSR;
+                         SST := [165.]
+
+
+Rsquared := SSR(1, 1)/SST(1, 1);
+                 Rsquared := 0.845703087745454
+
+F := SSR(1, 1)*(n - k - 1)/(k*SSE(1, 1));
+                     F := 14.6160295824160
+
+
+           Test of Hypothesis that β2=0
+under the hypothesis `H0:β2=0 is is true`, then F is distributed as F(1,n-k-1)
+Reject H0 if F≥Fα,1,n-k-1
+Xa := DeleteColumn(X, 3);
+ka := numelems(Xa)/n;
+                                [1  0]
+                                [    ]
+                                [1  2]
+                                [    ]
+                                [1  2]
+                                [    ]
+                                [1  2]
+                                [    ]
+                                [1  4]
+                                [    ]
+                                [1  4]
+                          Xa := [    ]
+                                [1  4]
+                                [    ]
+                                [1  6]
+                                [    ]
+                                [1  6]
+                                [    ]
+                                [1  6]
+                                [    ]
+                                [1  8]
+                                [    ]
+                                [1  8]
+
+                            ka := 2
+
+Calculate the regression for the reduced model
+Xprimeda := Transpose(Xa);
+                    [1  1  1  1  1  1  1  1  1  1  1  1]
+        Xprimeda := [                                  ]
+                    [0  2  2  2  4  4  4  6  6  6  8  8]
+
+XprimedXa := Xprimeda . Xa;
+                                  [12  52 ]
+                     XprimedXa := [       ]
+                                  [52  296]
+
+XprimedXinversea := MatrixInverse(XprimedXa);
+                              [    37             13 ]
+                              [   ---      uminus0---]
+                              [   106             212]
+          XprimedXinversea := [                      ]
+                              [       13       3     ]
+                              [uminus0---     ---    ]
+                              [       212     212    ]
+
+XprimedYa := Xprimeda . Y;
+                                    [90 ]
+                       XprimedYa := [   ]
+                                    [482]
+
+Betahata := XprimedXinversea . XprimedYa;
+                                   [197]
+                                   [---]
+                                   [106]
+                       Betahata := [   ]
+                                   [69 ]
+                                   [-- ]
+                                   [53 ]
+
+
+Find the SSEa, SSRa, the F statistic,  Perform an analysis of variance, AOV
+Betahata := convert(Betahata, float);
+BetahatPrimea := Transpose(Betahata);
+
+          BetahatPrimea := [1.858490566  1.301886792]
+
+SSEa := (YprimedY - (BetahatPrimea . XprimedYa))/(n + (-ka - 1));
+SSEa := SSEa(1, 1);
+                    SSEa := 5.02515725733334
+
+
+SSRa := ((((Transpose(Betahata)) . (Transpose(Xa))) . Y) - (n . (Ymean(1, 1)^2)))(1, 1);
+                    SSRa := 119.773584684000
+
+SSTa := SSRa + SSEa;
+SSTa := SSTa(1, 1);
+                    SSTa := 124.798741941333
+
+
+h := k - ka;
+                             h := 1
+
+F := (SSR - SSRa)*(n - k - 1)/(h*SSE(1, 1));
+h, n - k - 1;
+                    F := [6.21153451529613]
+
+                              1, 8
+
+
+Estimate a confidence interval for the (full model) Regression Coefficients
+s := EstimatedStandardDeviation;
+`cov&beta;`;
+                    sAssign1.78392091059273
+
+[[24.8164923384795, 6.18404501638486, &uminus0;5.82263978815458], 
+
+  [6.18404501638486, 4.12604302229574, &uminus0;2.83100762113723], 
+
+  [&uminus0;5.82263978815458, &uminus0;2.83100762113723, 
+
+  2.12827523291167]]
+
+
+df := n + (-k - 1);
+t := 2.306;
+                            df := 8
+
+                           t := 2.306
+
+Betahat;      #                                     Regression Coefficients from step 10                                                   
+[Typesetting:-mtable(Typesetting:-mtr(Typesetting:-mtd(
+
+  5.375394322, rowalign = "", columnalign = "", groupalign = "", 
+
+  rowspan = "1", columnspan = "1"), rowalign = "", 
+
+  columnalign = "", groupalign = ""), Typesetting:-mtr(
+
+  Typesetting:-mtd(3.011829653, rowalign = "", columnalign = "", 
+
+  groupalign = "", rowspan = "1", columnspan = "1"), 
+
+  rowalign = "", columnalign = "", groupalign = ""), 
+
+  Typesetting:-mtr(Typesetting:-mtd(uminus01.285488959, 
+
+  rowalign = "", columnalign = "", groupalign = "", 
+
+  rowspan = "1", columnspan = "1"), rowalign = "", 
+
+  columnalign = "", groupalign = ""), foreground = "[0,0,0]", 
+
+  readonly = "false", align = "axis", rowalign = "baseline", 
+
+  columnalign = "center", groupalign = "{left}", 
+
+  alignmentscope = "true", columnwidth = "auto", width = "auto", 
+
+  rowspacing = "1.0ex", columnspacing = "0.8em", 
+
+  rowlines = "none", columnlines = "none", frame = "none", 
+
+  framespacing = "0.4em 0.5ex", equalrows = "false", 
+
+  equalcolumns = "false", displaystyle = "false", side = "right", 
+
+  minlabelspacing = "0.8em")]
+
+
+for i to k do
+    print(beta, i, t*s*sqrt(`cov&beta;`(i, i)));
+end do;
+       2-Tail,   95% Confidence , Half-interval for each Regression Coefficient
+                   beta, 1, 20.4929791150740
+
+                   beta, 2, 8.35606433774962
+
+                   beta, 3, 6.00134777602189
+
+
+
+Literature:
+1.  Wickepedia on multiple linear regression   (https://en.wikipedia.org/wiki/Proofs_involving_ordinary_least_squares ) 
+2. "Linear Models in Statistics", Alvin C. Bencher & Bruce Schaaltje, (Wiley Interscience 2007)  
+3. Table of critical values of the F Distribution (http://www.socr.ucla.edu/Applets.dir/F_Table.html)
+    Table of critical     "                t         "             (https://www.itl.nist.gov/div898/handbook/eda/section3/eda3672.htm)
+
